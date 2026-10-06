@@ -1,6 +1,8 @@
+import { BusinessRuleError } from "../errors/BusinessRuleError";
 import { NotFoundError } from "../errors/NotFoundError";
 import { ValidationError } from "../errors/ValidationError";
 import { bookRepository } from "../repositories/book.repository";
+import { loanRepository } from "../repositories/loan.repository";
 import type { CreateBookInput, ListBooksQuery, UpdateBookInput } from "../validators/book.schema";
 
 export const bookService = {
@@ -51,6 +53,12 @@ export const bookService = {
 
   async remove(id: number) {
     await this.getById(id);
+
+    const activeLoans = await loanRepository.countActiveByBook(id);
+    if (activeLoans > 0) {
+      throw new BusinessRuleError("No se puede eliminar un libro con préstamos activos", "BOOK_HAS_ACTIVE_LOANS");
+    }
+
     await bookRepository.delete(id);
   },
 };

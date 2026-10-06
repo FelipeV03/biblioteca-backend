@@ -1,6 +1,8 @@
+import { BusinessRuleError } from "../../src/errors/BusinessRuleError";
 import { NotFoundError } from "../../src/errors/NotFoundError";
 import { ValidationError } from "../../src/errors/ValidationError";
 import { bookRepository } from "../../src/repositories/book.repository";
+import { loanRepository } from "../../src/repositories/loan.repository";
 import { bookService } from "../../src/services/book.service";
 
 jest.mock("../../src/repositories/book.repository", () => ({
@@ -14,7 +16,18 @@ jest.mock("../../src/repositories/book.repository", () => ({
   },
 }));
 
+jest.mock("../../src/repositories/loan.repository", () => ({
+  loanRepository: {
+    countActiveByBook: jest.fn(),
+  },
+}));
+
 const mockedRepo = bookRepository as jest.Mocked<typeof bookRepository>;
+const mockedLoanRepo = loanRepository as jest.Mocked<typeof loanRepository>;
+
+beforeEach(() => {
+  mockedLoanRepo.countActiveByBook.mockResolvedValue(0);
+});
 
 describe("bookService", () => {
   describe("list", () => {
@@ -104,6 +117,14 @@ describe("bookService", () => {
       mockedRepo.findById.mockResolvedValue(null);
 
       await expect(bookService.remove(1)).rejects.toThrow(NotFoundError);
+      expect(mockedRepo.delete).not.toHaveBeenCalled();
+    });
+
+    it("lanza BusinessRuleError si el libro tiene préstamos activos", async () => {
+      mockedRepo.findById.mockResolvedValue({ id: 1 } as never);
+      mockedLoanRepo.countActiveByBook.mockResolvedValue(1);
+
+      await expect(bookService.remove(1)).rejects.toThrow(BusinessRuleError);
       expect(mockedRepo.delete).not.toHaveBeenCalled();
     });
 

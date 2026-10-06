@@ -1,4 +1,4 @@
-import { Op, type Attributes, type WhereOptions } from "sequelize";
+import { Op, type Attributes, type Transaction, type WhereOptions } from "sequelize";
 import { Book } from "../models";
 import type { Book as BookModel } from "../models/Book";
 
@@ -71,10 +71,10 @@ export const bookRepository = {
     return Book.create(data);
   },
 
-  async update(id: number, data: UpdateBookData) {
-    const book = await Book.findByPk(id);
+  async update(id: number, data: UpdateBookData, transaction?: Transaction) {
+    const book = await Book.findByPk(id, { transaction });
     if (!book) return null;
-    return book.update(data);
+    return book.update(data, { transaction });
   },
 
   async delete(id: number) {
