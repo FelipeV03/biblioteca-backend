@@ -1,3 +1,4 @@
+import { ForeignKeyConstraintError } from "sequelize";
 import { BusinessRuleError } from "../errors/BusinessRuleError";
 import { NotFoundError } from "../errors/NotFoundError";
 import { ValidationError } from "../errors/ValidationError";
@@ -59,6 +60,16 @@ export const bookService = {
       throw new BusinessRuleError("No se puede eliminar un libro con préstamos activos", "BOOK_HAS_ACTIVE_LOANS");
     }
 
-    await bookRepository.delete(id);
+    try {
+      await bookRepository.delete(id);
+    } catch (error) {
+      if (error instanceof ForeignKeyConstraintError) {
+        throw new BusinessRuleError(
+          "No se puede eliminar un libro con historial de préstamos (incluye préstamos ya devueltos)",
+          "BOOK_HAS_LOAN_HISTORY",
+        );
+      }
+      throw error;
+    }
   },
 };
