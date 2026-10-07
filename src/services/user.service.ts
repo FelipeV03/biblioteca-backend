@@ -18,10 +18,18 @@ export const userService = {
   },
 
   async create(input: CreateUserInput) {
-    const existing = await userRepository.findByEmail(input.email);
-    if (existing) {
+    const existingEmail = await userRepository.findByEmail(input.email);
+    if (existingEmail) {
       throw new ValidationError("Ya existe un usuario con ese email", { email: ["El email ya está registrado"] });
     }
+
+    const existingDocument = await userRepository.findByDocumentNumber(input.documentNumber);
+    if (existingDocument) {
+      throw new ValidationError("Ya existe un usuario con ese número de documento", {
+        documentNumber: ["El número de documento ya está registrado"],
+      });
+    }
+
     return userRepository.create(input);
   },
 
@@ -32,6 +40,15 @@ export const userService = {
       const existing = await userRepository.findByEmail(input.email);
       if (existing && existing.id !== id) {
         throw new ValidationError("Ya existe un usuario con ese email", { email: ["El email ya está registrado"] });
+      }
+    }
+
+    if (input.documentNumber) {
+      const existing = await userRepository.findByDocumentNumber(input.documentNumber);
+      if (existing && existing.id !== id) {
+        throw new ValidationError("Ya existe un usuario con ese número de documento", {
+          documentNumber: ["El número de documento ya está registrado"],
+        });
       }
     }
 

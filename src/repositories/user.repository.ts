@@ -3,6 +3,7 @@ import { User } from "../models";
 export interface CreateUserData {
   name: string;
   email: string;
+  documentNumber: string;
 }
 
 export type UpdateUserData = Partial<CreateUserData>;
@@ -18,6 +19,10 @@ export const userRepository = {
 
   findByEmail(email: string) {
     return User.findOne({ where: { email } });
+  },
+
+  findByDocumentNumber(documentNumber: string) {
+    return User.findOne({ where: { documentNumber } });
   },
 
   create(data: CreateUserData) {
