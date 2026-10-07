@@ -4,6 +4,7 @@ export class User extends Model<InferAttributes<User>, InferCreationAttributes<U
   declare id: CreationOptional<number>;
   declare name: string;
   declare email: string;
+  declare documentNumber: string;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }
@@ -22,6 +23,11 @@ export function initUserModel(sequelize: Sequelize) {
       },
       email: {
         type: DataTypes.STRING(255),
+        allowNull: false,
+        unique: true,
+      },
+      documentNumber: {
+        type: DataTypes.STRING(20),
         allowNull: false,
         unique: true,
       },
